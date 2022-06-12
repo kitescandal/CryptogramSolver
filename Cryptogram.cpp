@@ -88,11 +88,11 @@ int Cryptogram::solveFromQueue(std::queue<CryptogramSolution>& solutions, Patter
                  << ". REMAINING WORDS = " << (unsolvedWords.size() - frontSolution.solvedWords) << ".\n";
         }
 
-        bool firstWordIsCompleted = frontSolution.chars.solvesWord(wordToSolve);
+        bool firstWordIsCompleted = frontSolution.key.solvesWord(wordToSolve);
         bool firstWordIsValid = true;
 
         if(firstWordIsCompleted) {
-            std::string firstWord = frontSolution.chars.makeSolvedString(wordToSolve);
+            std::string firstWord = frontSolution.key.makeSolvedString(wordToSolve);
             firstWordIsValid = dictionary.checkWordExists(firstWord);
         }
 
@@ -101,7 +101,7 @@ int Cryptogram::solveFromQueue(std::queue<CryptogramSolution>& solutions, Patter
             if(validWords) {
                 for(int i = 0; i < validWords->size(); i++) {
                     TranslationKey wordSolvedChars(validWords->at(i).word, wordToSolve);
-                    if(wordSolvedChars.compatible(frontSolution.chars))
+                    if(wordSolvedChars.compatible(frontSolution.key))
                         solutions.emplace(frontSolution, wordSolvedChars, validWords->at(i).freq);
                 }
             }
@@ -136,13 +136,13 @@ void Cryptogram::solve(PatternDictionary& dictionary)
         std::string skippedWord = unsolvedWords[i];
         resultsCount = solveFromQueue(solutions, dictionary, unsolvedWords, solutionsTested, i);
 
-        if(resultsCount && !solutions.front().chars.solvesWord(skippedWord))
+        if(resultsCount && !solutions.front().key.solvesWord(skippedWord))
             partiallySolved = true;
     }
 
     finalSolutions.clear();
     while(solutions.size()) {
-        finalSolutions.emplace_back(solutions.front().chars.makeSolvedString(input), solutions.front().totalFreq);
+        finalSolutions.emplace_back(solutions.front().key.makeSolvedString(input), solutions.front().totalFreq);
         solutions.pop();
     }
 

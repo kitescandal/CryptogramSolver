@@ -10,19 +10,19 @@ public:
     {
         totalFreq = 0;
         solvedWords = 0;
-        chars.clear();
+        key.clear();
     }
 
-    CryptogramSolution(CryptogramSolution& lastSolved, TranslationKey charsToApply, int freqToAdd)
+    CryptogramSolution(CryptogramSolution& lastSolved, TranslationKey keyToApply, int freqToAdd)
     {
         totalFreq = lastSolved.totalFreq + freqToAdd;
         solvedWords = lastSolved.solvedWords + 1;
 
-        chars = lastSolved.chars;
-        chars.merge(charsToApply);
+        key = lastSolved.key;
+        key.merge(keyToApply);
     }
 
-    TranslationKey chars;
+    TranslationKey key;
     int solvedWords;
     int totalFreq;
 };
