@@ -14,7 +14,6 @@ class Cryptogram
     static bool stringLengthGreater(const std::string& a, const std::string& b);
     bool allowedWordChar(char input);
     void splitWordsFromInputString(std::vector<std::string>& unsolvedWords, std::string input);
-    std::string generatePatternString(std::string input);
     int solveFromQueue(std::queue<CryptogramSolution>& solutions, PatternDictionary& dictionary, std::vector<std::string> unsolvedWords, int& solutionsTested, int skipWord);
 
 public:

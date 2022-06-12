@@ -38,35 +38,6 @@ void Cryptogram::splitWordsFromInputString(std::vector<std::string>& unsolvedWor
     std::sort(unsolvedWords.begin(), unsolvedWords.end(), stringLengthGreater);
 }
 
-std::string Cryptogram::generatePatternString(std::string input)
-{
-    char lettersUsed[26] = {0};
-    int uniqueLetters = 0;
-    std::string pattern = input;
-
-    for(int i = 0; i < input.length(); i++) {
-        if(input[i] == '\'')
-            continue;
-
-        bool found = false;
-        for(int j = 0; j < uniqueLetters; j++) {
-            if(input[i] == lettersUsed[j]) {
-                pattern[i] = ('a' + j);
-                found = true;
-                break;
-            }
-        }
-
-        if(!found) {
-            lettersUsed[uniqueLetters] = input[i];
-            pattern[i] = ('a' + uniqueLetters);
-            uniqueLetters++;
-        }
-    }
-
-    return pattern;
-}
-
 int Cryptogram::solveFromQueue(std::queue<CryptogramSolution>& solutions, PatternDictionary& dictionary, std::vector<std::string> unsolvedWords, int& solutionsTested, int skipWord)
 {
     if(skipWord >= 0) {
@@ -76,7 +47,7 @@ int Cryptogram::solveFromQueue(std::queue<CryptogramSolution>& solutions, Patter
 
     std::vector<std::string> wordPatterns;
     for(int i = 0; i < unsolvedWords.size(); i++)
-        wordPatterns.push_back(generatePatternString(unsolvedWords[i]));
+        wordPatterns.push_back(dictionary.generatePatternString(unsolvedWords[i]));
 
     while(solutions.size() && solutions.front().solvedWords < unsolvedWords.size()) {
         CryptogramSolution& frontSolution = solutions.front();

@@ -1,4 +1,5 @@
 #include "PatternDictionary.h"
+#include "englishLanguageData.h"
 
 int PatternDictionary::intFromString(std::string& input)
 {
@@ -9,22 +10,50 @@ int PatternDictionary::intFromString(std::string& input)
     return output;
 }
 
+std::string PatternDictionary::generatePatternString(std::string input)
+{
+    char lettersUsed[26] = {0};
+    int uniqueLetters = 0;
+    std::string pattern = input;
+
+    for(int i = 0; i < input.length(); i++) {
+        if(input[i] == '\'')
+            continue;
+
+        bool found = false;
+        for(int j = 0; j < uniqueLetters; j++) {
+            if(input[i] == lettersUsed[j]) {
+                pattern[i] = ('a' + j);
+                found = true;
+                break;
+            }
+        }
+
+        if(!found) {
+            lettersUsed[uniqueLetters] = input[i];
+            pattern[i] = ('a' + uniqueLetters);
+            uniqueLetters++;
+        }
+    }
+
+    return pattern;
+}
+
 void PatternDictionary::makeFromFile(std::string filename)
 {
     std::string patternInput, wordInput, freqInput;
+    std::stringstream ss(englishLanguageData);
 
-    std::ifstream filein(filename);
-    while(!filein.eof()) {
-        getline(filein, patternInput);
-        getline(filein, wordInput);
-        getline(filein, freqInput);
+    while(!ss.eof()) {
+        getline(ss, wordInput);
+        patternInput = generatePatternString(wordInput);
+        getline(ss, freqInput);
 
         int freqValue = intFromString(freqInput);
 
         allPatterns[patternInput].emplace_back(wordInput, freqValue);
         allWords.insert(wordInput);
     }
-    filein.close();
 }
 
 bool PatternDictionary::checkWordExists(std::string& word) {
