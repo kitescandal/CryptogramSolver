@@ -16,7 +16,7 @@ int main()
     usTimer timer;
 
     timer.start();
-    dictionary.makeFromFile("patternData.txt");
+    dictionary.makeFromLanguageDataArray();
     timer.stop();
     std::cout << "LOADED WORD PATTERN DATA IN " << ((float)(timer.get()/1000))/1000.0f << " SEC.\n\n";
 

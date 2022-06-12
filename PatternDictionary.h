@@ -15,7 +15,7 @@ class PatternDictionary
 
 public:
     std::string generatePatternString(std::string input);
-    void makeFromFile(std::string filename);
+    void makeFromLanguageDataArray();
     bool checkWordExists(std::string& word);
     std::vector<WordData>* getWordsFromPattern(std::string pattern);
 

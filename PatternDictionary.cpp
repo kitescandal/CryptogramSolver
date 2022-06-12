@@ -39,7 +39,7 @@ std::string PatternDictionary::generatePatternString(std::string input)
     return pattern;
 }
 
-void PatternDictionary::makeFromFile(std::string filename)
+void PatternDictionary::makeFromLanguageDataArray()
 {
     std::string patternInput, wordInput, freqInput;
     std::stringstream ss(englishLanguageData);
