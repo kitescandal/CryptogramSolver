@@ -1,5 +1,5 @@
-#ifndef SOLUTION_H
-#define SOLUTION_H
+#ifndef CRYPTOGRAM_SOLUTION_H
+#define CRYPTOGRAM_SOLUTION_H
 
 #include "TranslationKey.h"
 
@@ -27,4 +27,4 @@ public:
     int totalFreq;
 };
 
-#endif // SOLUTION_H
+#endif // CRYPTOGRAM_SOLUTION_H
