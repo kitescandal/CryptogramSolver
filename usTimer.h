@@ -4,6 +4,7 @@
 #define US_TIMER_H
 
 #include<windows.h>
+#include<cmath>
 
 class usTimer
 {
@@ -45,6 +46,14 @@ public:
             QueryPerformanceCounter(&usedCount);
 
         return (int)((usedCount.QuadPart - startCount.QuadPart + pauseCount.QuadPart) * 1000000 / freq.QuadPart);
+    }
+
+    float getSeconds() {
+        return (float)get() / 1000000.0f;
+    }
+
+    float getSecondsRounded(float rounding) {
+        return std::roundf(getSeconds() / rounding) * rounding;
     }
 };
 

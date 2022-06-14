@@ -18,7 +18,7 @@ int main()
     timer.start();
     dictionary.makeFromLanguageDataArray();
     timer.stop();
-    std::cout << "LOADED WORD PATTERN DATA IN " << ((float)(timer.get()/1000))/1000.0f << " SEC.\n\n";
+    std::cout << "LOADED WORD PATTERN DATA IN " << timer.getSecondsRounded(0.001f) << " SEC.\n\n";
 
     while(1) {
         std::cout << "ENTER A CRYPTOGRAM:\n";

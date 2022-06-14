@@ -111,29 +111,29 @@ void Cryptogram::solve(PatternDictionary& dictionary)
             partiallySolved = true;
     }
 
-    finalSolutions.clear();
+    stringSolutions.clear();
     while(solutions.size()) {
-        finalSolutions.emplace_back(solutions.front().key.makeSolvedString(input), solutions.front().totalFreq);
+        stringSolutions.emplace_back(solutions.front().key.makeSolvedString(input), solutions.front().totalFreq);
         solutions.pop();
     }
 
-    std::sort(finalSolutions.begin(), finalSolutions.end());
+    std::sort(stringSolutions.begin(), stringSolutions.end());
 
     solveTimer.stop();
-    solveTime = ((float)solveTimer.get())/1000000.0f;
+    solveTime = solveTimer.getSeconds();
 }
 
 void Cryptogram::printSolutions()
 {
     std::cout << "--------------------------------------------------------------------------------\n\n";
 
-    int solutionsToOutput = std::min((int)finalSolutions.size(), 100);
+    int solutionsToOutput = std::min((int)stringSolutions.size(), 100);
 
     if(solutionsToOutput == 1 && partiallySolved)
         std::cout << "INCOMPLETE SOLUTION:\n\n";
 
     for(int i = 1; i <= solutionsToOutput; i++)
-        std::cout << finalSolutions[solutionsToOutput-i].word << "\n\n";
+        std::cout << stringSolutions[solutionsToOutput-i].word << "\n\n";
 
     if(solutionsToOutput == 0)
         std::cout << "NO SOLUTION FOUND. :(\n\n";
@@ -141,9 +141,9 @@ void Cryptogram::printSolutions()
         std::cout << "(ONLY PRINTED TOP 100 SOLUTIONS)\n\n";
 
     if(solutionsToOutput > 1) {
-        std::cout << "TOTAL " << (partiallySolved ? "INCOMPLETE " : "") << "SOLUTIONS FOUND: " << finalSolutions.size()
+        std::cout << "TOTAL " << (partiallySolved ? "INCOMPLETE " : "") << "SOLUTIONS FOUND: " << stringSolutions.size()
              << "\n\n\tMOST LIKELY " << (partiallySolved ? "INCOMPLETE " : "")
-             << "SOLUTION:\n\t---------------------\n" << finalSolutions[0].word << "\n\n";
+             << "SOLUTION:\n\t---------------------\n" << stringSolutions[0].word << "\n\n";
     }
 
     std::cout << "-------------------------------------- " << solveTime << " SEC --------------------------------------\n\n";

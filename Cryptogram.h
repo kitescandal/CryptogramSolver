@@ -23,7 +23,7 @@ public:
 
     std::string input;
     bool partiallySolved;
-    std::vector<WordData> finalSolutions;
+    std::vector<WordData> stringSolutions;
     float solveTime;
 };
 
