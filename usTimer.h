@@ -53,6 +53,8 @@ public:
     }
 
     float getSecondsRounded(float rounding) {
+        if(rounding < 0.000001f)
+            rounding = 0.000001f;
         return std::roundf(getSeconds() / rounding) * rounding;
     }
 };

@@ -1,7 +1,7 @@
 /*
-  Name: Cryptogram Solver.exe
+  Name: Cryptogram Solver
   Author: Daniel Stack
-  Date: 05/06/2022
+  Created: 05/06/2022
 */
 
 #include<iostream>
