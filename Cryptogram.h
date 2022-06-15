@@ -16,15 +16,15 @@ class Cryptogram
     void splitWordsFromInputString(std::vector<std::string>& unsolvedWords, std::string input);
     int solveFromQueue(std::queue<CryptogramSolution>& solutions, PatternDictionary& dictionary, std::vector<std::string> unsolvedWords, int& solutionsTested, int skipWord);
 
-public:
-    Cryptogram(std::string input_) : input(input_), solveTime(0.0f), partiallySolved(false) {}
-    void solve(PatternDictionary& dictionary);
-    void printSolutions();
-
     std::string input;
     bool partiallySolved;
     std::vector<WordData> stringSolutions;
     float solveTime;
+
+public:
+    Cryptogram(std::string input_) : input(input_), solveTime(0.0f), partiallySolved(false) {}
+    void solve(PatternDictionary& dictionary);
+    void printSolutions();
 };
 
 #endif // CRYPTOGRAM_H
