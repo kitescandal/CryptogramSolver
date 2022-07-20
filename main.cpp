@@ -20,6 +20,8 @@ int main()
     timer.stop();
     std::cout << "LOADED WORD PATTERN DATA IN " << timer.getSecondsRounded(0.001f) << " SEC.\n\n";
 
+    Cryptogram::runTestCases(dictionary);
+
     while(1) {
         std::cout << "ENTER A CRYPTOGRAM:\n";
         std::string input;
