@@ -3,49 +3,52 @@
 #ifndef US_TIMER_H
 #define US_TIMER_H
 
-#include<windows.h>
+#include<chrono>
 #include<cmath>
 
 class usTimer
 {
-    LARGE_INTEGER startCount;
-    LARGE_INTEGER endCount;
-    LARGE_INTEGER pauseCount;
-    LARGE_INTEGER freq;
+    typedef std::chrono::time_point<std::chrono::steady_clock> TimePoint;
+    typedef std::chrono::duration<double, std::micro> TimeDuration;
+
+    TimePoint startTime;
+    TimeDuration totalTime;
+    bool paused;
 
 public:
-    usTimer() {
-        QueryPerformanceFrequency(&freq);
-    }
+    usTimer() : paused(true), totalTime(std::chrono::microseconds(0)) {}
 
     void start()
     {
-        endCount.QuadPart = 0;
-        pauseCount.QuadPart = 0;
-        QueryPerformanceCounter(&startCount);
+        startTime = std::chrono::steady_clock::now();
+        totalTime = std::chrono::microseconds(0);
+        paused = false;
     }
 
-    void stop() {
-        QueryPerformanceCounter(&endCount);
+    void stop()
+    {
+        TimePoint endTime = std::chrono::steady_clock::now();
+        totalTime += std::chrono::duration_cast<std::chrono::microseconds>(endTime - startTime);
+        paused = true;
     }
 
     void restart()
     {
-        pauseCount.QuadPart += endCount.QuadPart - startCount.QuadPart;
-        endCount.QuadPart = 0;
-        QueryPerformanceCounter(&startCount);
+        startTime = std::chrono::steady_clock::now();
+        paused = false;
     }
 
     int get()
     {
-        LARGE_INTEGER usedCount;
+        TimeDuration duration;
 
-        if(endCount.QuadPart)
-            usedCount = endCount;
-        else
-            QueryPerformanceCounter(&usedCount);
-
-        return (int)((usedCount.QuadPart - startCount.QuadPart + pauseCount.QuadPart) * 1000000 / freq.QuadPart);
+        if(paused)
+            duration = totalTime;
+        else {
+            TimePoint thisTime = std::chrono::steady_clock::now();
+            duration = totalTime + std::chrono::duration_cast<std::chrono::microseconds>(thisTime - startTime);
+        }
+        return (int)duration.count();
     }
 
     float getSeconds() {
