@@ -6,6 +6,7 @@
 #include "PatternDictionary.h"
 
 #include<queue>
+#include<list>
 #include<algorithm>
 #include<iostream>
 #include<thread>
@@ -29,7 +30,7 @@ class Cryptogram
     std::vector<WordData> stringSolutions;
     float solveTime;
 
-    std::queue<CryptogramSolution> solutions;
+    std::list<CryptogramSolution> solutionsQueue;
     std::atomic<int> solutionsTested;
     std::atomic<int> solutionsFound;
 

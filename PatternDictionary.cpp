@@ -52,12 +52,16 @@ void PatternDictionary::makeFromLanguageDataArray()
         int freqValue = intFromString(freqInput);
 
         allPatterns[patternInput].emplace_back(wordInput, freqValue);
-        allWords.insert(wordInput);
+        allWords[wordInput] = freqValue;
     }
 }
 
-bool PatternDictionary::checkWordExists(std::string& word) {
-    return (allWords.find(word) != allWords.end());
+int PatternDictionary::checkWordFrequency(std::string& word) {
+    std::unordered_map<std::string, int>::iterator searchWord = allWords.find(word);
+
+    if(searchWord != allWords.end())
+        return searchWord->second;
+    return -1;
 }
 
 std::vector<WordData>* PatternDictionary::getWordsFromPattern(std::string pattern)

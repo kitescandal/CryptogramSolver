@@ -16,11 +16,11 @@ class PatternDictionary
 public:
     std::string generatePatternString(std::string input);
     void makeFromLanguageDataArray();
-    bool checkWordExists(std::string& word);
+    int checkWordFrequency(std::string& word);
     std::vector<WordData>* getWordsFromPattern(std::string pattern);
 
     std::unordered_map<std::string, std::vector<WordData>> allPatterns;
-    std::unordered_set<std::string> allWords;
+    std::unordered_map<std::string, int> allWords;
 
     static const std::string englishLanguageData;
 };

@@ -39,65 +39,72 @@ void Cryptogram::splitWordsFromInputString(std::vector<std::string>& unsolvedWor
 }
 
 bool Cryptogram::finishedSolveAttempt() {
-    return ((solutions.empty() && !processingThreads) || (!solutions.empty() && solutions.size() == solutionsFound));
+    return ((solutionsQueue.empty() && !processingThreads) || (!solutionsQueue.empty() && solutionsQueue.size() == solutionsFound));
 }
 
 bool Cryptogram::canProcessNextSolution() {
-    return !solutions.empty() || Cryptogram::finishedSolveAttempt();
+    return (!solutionsQueue.empty() || Cryptogram::finishedSolveAttempt());
 }
 
 void Cryptogram::threadSolve(PatternDictionary& dictionary, std::vector<std::string>& unsolvedWords, std::vector<std::string>& wordPatterns)
 {
     while(1) {
+        std::list<CryptogramSolution> appendList;
+
         std::unique_lock<std::mutex> queueLock(queueMutex);
         queueUpdateCondition.wait(queueLock, std::bind(canProcessNextSolution, this));
 
-        if(finishedSolveAttempt())
+        if(finishedSolveAttempt()) {
+            queueUpdateCondition.notify_all();
             break;
+        }
 
         processingThreads++;
 
-        CryptogramSolution frontSolution = solutions.front();
-        solutions.pop();
-
-        if(frontSolution.solvedWords == unsolvedWords.size()) {
-            solutions.emplace(frontSolution);
+        if(solutionsQueue.front().solvedWords == unsolvedWords.size()) { // If already solved, move to back of queue
+            solutionsQueue.splice(solutionsQueue.end(), solutionsQueue, solutionsQueue.begin());
             queueLock.unlock();
             queueUpdateCondition.notify_all();
             processingThreads--;
             continue;
         }
 
+        appendList.splice(appendList.begin(), solutionsQueue, solutionsQueue.begin()); // Move first in solve queue to new list
         queueLock.unlock();
+
+        CryptogramSolution& frontSolution = appendList.front();
+        solutionsTested++;
 
         std::string& wordToSolve = unsolvedWords[frontSolution.solvedWords];
 
-        solutionsTested++;
-
-        bool firstWordIsCompleted = frontSolution.key.solvesWord(wordToSolve);
-        bool firstWordIsValid = true;
-
-        if(firstWordIsCompleted) {
+        if(frontSolution.key.solvesWord(wordToSolve)) { // Check if next word is already solved by letters known
             std::string firstWord = frontSolution.key.makeSolvedString(wordToSolve);
-            firstWordIsValid = dictionary.checkWordExists(firstWord);
-        }
+            int wordFreq = dictionary.checkWordFrequency(firstWord);
 
-        if(firstWordIsValid) {
+            if(wordFreq != -1)
+                appendList.emplace_back(frontSolution, frontSolution.key, wordFreq);
+        }
+        else {
             std::vector<WordData>* validWords = dictionary.getWordsFromPattern(wordPatterns[frontSolution.solvedWords]);
             if(validWords) {
                 for(int i = 0; i < validWords->size(); i++) {
                     TranslationKey wordSolvedChars(validWords->at(i).word, wordToSolve);
-                    if(wordSolvedChars.compatible(frontSolution.key)) {
-                        if(frontSolution.solvedWords == unsolvedWords.size()-1)
-                            solutionsFound++;
-
-                        queueLock.lock();
-                        solutions.emplace(frontSolution, wordSolvedChars, validWords->at(i).freq);
-                        queueLock.unlock();
-                        queueUpdateCondition.notify_all();
-                    }
+                    if(wordSolvedChars.compatible(frontSolution.key))
+                        appendList.emplace_back(frontSolution, wordSolvedChars, validWords->at(i).freq);
                 }
             }
+        }
+
+        appendList.pop_front();
+
+        if(!appendList.empty()) {
+            if(frontSolution.solvedWords == unsolvedWords.size()-1)
+                solutionsFound += appendList.size();
+
+            queueLock.lock();
+            solutionsQueue.splice(solutionsQueue.end(), appendList);
+            queueLock.unlock();
+            queueUpdateCondition.notify_all();
         }
 
         processingThreads--;
@@ -118,7 +125,7 @@ int Cryptogram::solveFromQueue(PatternDictionary& dictionary, std::vector<std::s
     processingThreads = 0;
 
     std::vector<std::thread> solveThreads;
-    int threadCount = std::max(1, (int)(std::thread::hardware_concurrency()));
+    int threadCount = std::max(1, (int)(std::thread::hardware_concurrency() - 1));
 
     for(int i = 0; i < threadCount; i++)
         solveThreads.emplace_back(threadSolve, this, std::ref(dictionary), std::ref(unsolvedWords), std::ref(wordPatterns));
@@ -126,7 +133,7 @@ int Cryptogram::solveFromQueue(PatternDictionary& dictionary, std::vector<std::s
     for(int i = 0; i < threadCount; i++)
         solveThreads[i].join();
 
-    return solutions.size();
+    return solutionsQueue.size();
 }
 
 void Cryptogram::solve(PatternDictionary& dictionary)
@@ -134,7 +141,7 @@ void Cryptogram::solve(PatternDictionary& dictionary)
     usTimer solveTimer;
     solveTimer.start();
 
-    solutions.emplace();
+    solutionsQueue.emplace_back();
 
     partiallySolved = false;
 
@@ -154,18 +161,18 @@ void Cryptogram::solve(PatternDictionary& dictionary)
     int resultsCount = solveFromQueue(dictionary, unsolvedWords, -1);
 
     for(int i = wordCount-1; !resultsCount && i >= 0; i--) { // If no solution is found, try again, excluding each word
-        solutions.emplace();
+        solutionsQueue.emplace_back();
         std::string skippedWord = unsolvedWords[i];
         resultsCount = solveFromQueue(dictionary, unsolvedWords, i);
 
-        if(resultsCount && !solutions.front().key.solvesWord(skippedWord))
+        if(resultsCount && !solutionsQueue.front().key.solvesWord(skippedWord))
             partiallySolved = true;
     }
 
     stringSolutions.clear();
-    while(solutions.size()) {
-        stringSolutions.emplace_back(solutions.front().key.makeSolvedString(input), solutions.front().totalFreq);
-        solutions.pop();
+    while(solutionsQueue.size()) {
+        stringSolutions.emplace_back(solutionsQueue.front().key.makeSolvedString(input), solutionsQueue.front().totalFreq);
+        solutionsQueue.pop_front();
     }
 
     std::sort(stringSolutions.begin(), stringSolutions.end());
