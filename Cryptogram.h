@@ -5,10 +5,11 @@
 #include "CryptogramSolution.h"
 #include "PatternDictionary.h"
 
-#include<queue>
+#include<vector>
 #include<list>
 #include<algorithm>
 #include<iostream>
+#include<functional>
 #include<thread>
 #include<mutex>
 #include<atomic>
@@ -42,6 +43,9 @@ public:
     Cryptogram(std::string input_) : input(input_), solveTime(0.0f), partiallySolved(false), solutionsTested(0) {}
     void solve(PatternDictionary& dictionary);
     void printSolutions();
+    bool foundSolution();
+
+    static void runTestCases(PatternDictionary& dictionary);
 };
 
 #endif // CRYPTOGRAM_H

@@ -206,3 +206,46 @@ void Cryptogram::printSolutions()
 
     std::cout << "-------------------------------------- " << solveTime << " SEC --------------------------------------\n\n";
 }
+
+bool Cryptogram::foundSolution() {
+    return (stringSolutions.size() > 0);
+}
+
+void Cryptogram::runTestCases(PatternDictionary& dictionary)
+{
+    std::vector<std::string> testStrings = {
+        "VLG CJMAFVCJXVG VLUJR XIACV VLUD QAFTP UD VLXV RAAP LXIUVD XFG DA OCYL GXDUGF VA RUZG CW VLXJ IXP AJGD.",
+        "RMG NVILU NZYG: RMG VUG DMV KLBK TR ALUUVR QG XVUG KMVZYX UGOGN TURGNNZFR RMG VUG DMV TK XVTUC TR.",
+        "BR ZBN ACXRT L ONQVCNM NY BCT VCJR LME VLIRMV VN LM CMXRTVCALVCNM NY JLVBRJLVCGLI VQWVB ZCII GNJR VN LII NVBRQ PWRTVCNMT ZCVB L ERGCERE LEXLMVLAR.",
+        "GTAYA FYA LANAYFC MWWE HYWGAIGVWSL FMFVSLG GADHGFGVWSL, KZG GTA LZYALG VL IWRFYEVIA.",
+        "GQLOSDCM DR BFWCQSOCH UHXOQRH SF LOS DR QSGOIIM HNXHIC UM GDR FPS BOQJC.",
+        "JU JT UIF SFTQPOTJCJMJUZ PG JOUFMMFDUVBMT UP TQFBL UIF USVUI BOE FYQPTF MJFT.",
+        "SPETBSC TEJ CJYNGX WEJJ; SDJ ITEJC TBN SDJ LBCSEMXJBSC GW SDJLE SPETBBP JBCYTRJ SDJX.",
+        "FNWRGVWRF NJR PVURF QNNPVFB ORNOPR QNT GBRVT QNPPI, ERGGRT GBXJ LVFR ORNOPR QNT GBRVT LVFSNW.",
+        "UKOTWGM GUNS HF KZ JXMG QUGUNCMGM XSV MEUA WUSGNXWGUNM.",
+        "KXY'G GNKX QFLBFZU ELUQODGDOH ZSDXLUD?",
+        "EAVY S OYCEYCBY ARJ IUOQ ER BRCLYKE UCER S BKAVERHKSF QYKY:",
+        "Ndh, uh qfklfkgkazgkly zoblfkgnu xddux gl td slfikyb!",
+        "FXA SRZ YNJIJS UC SRZ YZXYUT VOXEEZT AUHI RZXIS XTE TUHIJYR AUHI YUHO.",
+        "Ewmrpgn icllqpkfoqy nrdq r fwmh eohprlowm lpos qdqpx xqrp. Lnqx bwcpmqx kpwe lnq Hpqrl Frjqy lw lnq Hcfk wk Eqzogw, riwcl luw lnwcyrmv eofqy, rmv pqlcpm lw lnq mwpln rhrom om lnq yspomh. Lnrl pqeomvy eq wk lnq wfv bwjq: O bcyl kfqu om kpwe Eqzogw rmv iwx rpq ex rpey lopqv.",
+        "ICHLH ULH RELH ICUS IQHSID-YENL ICENOUSV OTHWZHO EY JNIIHLYKZHO, JNI REICO ULH HGHS RELH SNRHLENO. ICHLH ULH UJENI ESH CNSVLHV USV YELID ICENOUSV OTHWZHO EY REICO ASEQS IE HMZOI ZS ICH QELKV. ICH ESKD WESIZSHSI QCHLH SE JNIIHLYKZHO KZGH ZO USIULWIZWU. Z QENKVS'I QUSI IE KZGH ICHLH HZICHL.",
+        "RXLLFYCHKFD SYF KTDFOLD QKLN S NFSA, S LNVYSE, STA ST SRAVGFT, LQV STLFTTSF VT LNF NFSA STA S HVTB OXYHFA JYVRVDOKD. LNF STLFTTSF SYF TVL CVY CFFHKTB, LNFI SYF CVY DGFHHKTB. LNFI CFFA VT LNF TFOLSY CYVG CHVQFY NFSAD. LNFI XTOXYH LNFKY JYVRVDOKD DV LNFI OST DXOZ LNF TFOLSY LNYVXBN KL."
+    };
+
+    usTimer timer;
+    timer.start();
+
+    int solutionsFound = 0;
+
+    for(int i = 0; i < testStrings.size(); i++) {
+        Cryptogram testCrypt(testStrings[i]);
+        testCrypt.solve(dictionary);
+        if(testCrypt.foundSolution())
+            solutionsFound++;
+    }
+
+    timer.stop();
+
+    std::cout << "RAN ALL TESTS IN " << timer.getSecondsRounded(0.001f) << " SEC.\n";
+    std::cout << "SOLVED " << solutionsFound << " / " << testStrings.size() << " TEST INPUTS.\n\n";
+}
