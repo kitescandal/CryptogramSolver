@@ -1,5 +1,5 @@
 # CryptogramSolver
-Fast C++ cryptogram solver using precomputed word pattern data
+Fast multithreaded C++ cryptogram solver using precomputed word pattern data
 
 Example run:
 
