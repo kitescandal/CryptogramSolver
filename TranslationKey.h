@@ -2,10 +2,11 @@
 #define TRANSLATION_KEY_H
 
 #include<string>
+#include<array>
 
 class TranslationKey
 {
-    char arr[26]; // arr[0] is what an 'a' gets translated to, when decrypting
+    std::array<char, 26> arr; // arr[0] is what an 'a' gets translated to, when decrypting
 
 public:
     TranslationKey();

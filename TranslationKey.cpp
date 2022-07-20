@@ -11,7 +11,7 @@ TranslationKey::TranslationKey(std::string solved, std::string unsolved)
 }
 
 void TranslationKey::clear() {
-    std::fill(arr, arr+26, 0);
+    std::fill(arr.begin(), arr.end(), 0);
 }
 
 void TranslationKey::setFromSolvedUnsolved(std::string solved, std::string unsolved)

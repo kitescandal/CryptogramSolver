@@ -38,26 +38,41 @@ void Cryptogram::splitWordsFromInputString(std::vector<std::string>& unsolvedWor
     std::sort(unsolvedWords.begin(), unsolvedWords.end(), stringLengthGreater);
 }
 
-int Cryptogram::solveFromQueue(std::queue<CryptogramSolution>& solutions, PatternDictionary& dictionary, std::vector<std::string> unsolvedWords, int& solutionsTested, int skipWord)
+bool Cryptogram::finishedSolveAttempt() {
+    return ((solutions.empty() && !processingThreads) || (!solutions.empty() && solutions.size() == solutionsFound));
+}
+
+bool Cryptogram::canProcessNextSolution() {
+    return !solutions.empty() || Cryptogram::finishedSolveAttempt();
+}
+
+void Cryptogram::threadSolve(PatternDictionary& dictionary, std::vector<std::string>& unsolvedWords, std::vector<std::string>& wordPatterns)
 {
-    if(skipWord >= 0) {
-        std::cout << "SKIPPING WORD: " << unsolvedWords[skipWord] << "\n";
-        unsolvedWords.erase(unsolvedWords.begin() + skipWord);
-    }
+    while(1) {
+        std::unique_lock<std::mutex> queueLock(queueMutex);
+        queueUpdateCondition.wait(queueLock, std::bind(canProcessNextSolution, this));
 
-    std::vector<std::string> wordPatterns;
-    for(int i = 0; i < unsolvedWords.size(); i++)
-        wordPatterns.push_back(dictionary.generatePatternString(unsolvedWords[i]));
+        if(finishedSolveAttempt())
+            break;
 
-    while(solutions.size() && solutions.front().solvedWords < unsolvedWords.size()) {
-        CryptogramSolution& frontSolution = solutions.front();
+        processingThreads++;
+
+        CryptogramSolution frontSolution = solutions.front();
+        solutions.pop();
+
+        if(frontSolution.solvedWords == unsolvedWords.size()) {
+            solutions.emplace(frontSolution);
+            queueLock.unlock();
+            queueUpdateCondition.notify_all();
+            processingThreads--;
+            continue;
+        }
+
+        queueLock.unlock();
+
         std::string& wordToSolve = unsolvedWords[frontSolution.solvedWords];
 
         solutionsTested++;
-        if(solutionsTested % 10000 == 0) {
-            std::cout << "TESTED " << solutionsTested << ". REMAINING QUEUE = " << solutions.size()
-                 << ". REMAINING WORDS = " << (unsolvedWords.size() - frontSolution.solvedWords) << ".\n";
-        }
 
         bool firstWordIsCompleted = frontSolution.key.solvesWord(wordToSolve);
         bool firstWordIsValid = true;
@@ -72,14 +87,44 @@ int Cryptogram::solveFromQueue(std::queue<CryptogramSolution>& solutions, Patter
             if(validWords) {
                 for(int i = 0; i < validWords->size(); i++) {
                     TranslationKey wordSolvedChars(validWords->at(i).word, wordToSolve);
-                    if(wordSolvedChars.compatible(frontSolution.key))
+                    if(wordSolvedChars.compatible(frontSolution.key)) {
+                        if(frontSolution.solvedWords == unsolvedWords.size()-1)
+                            solutionsFound++;
+
+                        queueLock.lock();
                         solutions.emplace(frontSolution, wordSolvedChars, validWords->at(i).freq);
+                        queueLock.unlock();
+                        queueUpdateCondition.notify_all();
+                    }
                 }
             }
         }
 
-        solutions.pop();
+        processingThreads--;
     }
+}
+
+int Cryptogram::solveFromQueue(PatternDictionary& dictionary, std::vector<std::string> unsolvedWords, int skipWord)
+{
+    if(skipWord >= 0) {
+        std::cout << "SKIPPING WORD: " << unsolvedWords[skipWord] << "\n";
+        unsolvedWords.erase(unsolvedWords.begin() + skipWord);
+    }
+
+    std::vector<std::string> wordPatterns;
+    for(int i = 0; i < unsolvedWords.size(); i++)
+        wordPatterns.push_back(dictionary.generatePatternString(unsolvedWords[i]));
+
+    processingThreads = 0;
+
+    std::vector<std::thread> solveThreads;
+    int threadCount = std::max(1, (int)(std::thread::hardware_concurrency()));
+
+    for(int i = 0; i < threadCount; i++)
+        solveThreads.emplace_back(threadSolve, this, std::ref(dictionary), std::ref(unsolvedWords), std::ref(wordPatterns));
+
+    for(int i = 0; i < threadCount; i++)
+        solveThreads[i].join();
 
     return solutions.size();
 }
@@ -89,7 +134,6 @@ void Cryptogram::solve(PatternDictionary& dictionary)
     usTimer solveTimer;
     solveTimer.start();
 
-    std::queue<CryptogramSolution> solutions;
     solutions.emplace();
 
     partiallySolved = false;
@@ -97,15 +141,22 @@ void Cryptogram::solve(PatternDictionary& dictionary)
     std::vector<std::string> unsolvedWords;
     splitWordsFromInputString(unsolvedWords, input);
 
-    int solutionsTested = 0;
+    if(unsolvedWords.empty()) {
+        solveTimer.stop();
+        solveTime = solveTimer.getSeconds();
+        return;
+    }
+
+    solutionsTested = 0;
+    solutionsFound = 0;
     int wordCount = unsolvedWords.size();
 
-    int resultsCount = solveFromQueue(solutions, dictionary, unsolvedWords, solutionsTested, -1);
+    int resultsCount = solveFromQueue(dictionary, unsolvedWords, -1);
 
     for(int i = wordCount-1; !resultsCount && i >= 0; i--) { // If no solution is found, try again, excluding each word
         solutions.emplace();
         std::string skippedWord = unsolvedWords[i];
-        resultsCount = solveFromQueue(solutions, dictionary, unsolvedWords, solutionsTested, i);
+        resultsCount = solveFromQueue(dictionary, unsolvedWords, i);
 
         if(resultsCount && !solutions.front().key.solvesWord(skippedWord))
             partiallySolved = true;
