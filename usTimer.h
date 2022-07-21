@@ -38,7 +38,7 @@ public:
         paused = false;
     }
 
-    int get()
+    long long get()
     {
         TimeDuration duration;
 
@@ -48,16 +48,17 @@ public:
             TimePoint thisTime = std::chrono::steady_clock::now();
             duration = totalTime + std::chrono::duration_cast<std::chrono::microseconds>(thisTime - startTime);
         }
-        return (int)duration.count();
+        return (long long)duration.count();
     }
 
     float getSeconds() {
-        return (float)get() / 1000000.0f;
+        return (float)get() / 1'000'000.0f;
     }
 
-    float getSecondsRounded(float rounding) {
-        if(rounding < 0.000001f)
-            rounding = 0.000001f;
+    float getSecondsRounded(float rounding)
+    {
+        if(rounding < 0.000'001f)
+            rounding = 0.000'001f;
         return std::roundf(getSeconds() / rounding) * rounding;
     }
 };
