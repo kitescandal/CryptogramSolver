@@ -95,10 +95,11 @@ void Cryptogram::threadSolve(PatternDictionary& dictionary, std::vector<std::str
             }
         }
 
+        int solvedWords = frontSolution.solvedWords;
         appendList.pop_front();
 
         if(!appendList.empty()) {
-            if(frontSolution.solvedWords == unsolvedWords.size()-1)
+            if(solvedWords == unsolvedWords.size()-1)
                 solutionsFound += appendList.size();
 
             queueLock.lock();
@@ -223,9 +224,6 @@ void Cryptogram::runTestCases(PatternDictionary& dictionary)
         "SPETBSC TEJ CJYNGX WEJJ; SDJ ITEJC TBN SDJ LBCSEMXJBSC GW SDJLE SPETBBP JBCYTRJ SDJX.",
         "FNWRGVWRF NJR PVURF QNNPVFB ORNOPR QNT GBRVT QNPPI, ERGGRT GBXJ LVFR ORNOPR QNT GBRVT LVFSNW.",
         "UKOTWGM GUNS HF KZ JXMG QUGUNCMGM XSV MEUA WUSGNXWGUNM.",
-        "KXY'G GNKX QFLBFZU ELUQODGDOH ZSDXLUD?",
-        "EAVY S OYCEYCBY ARJ IUOQ ER BRCLYKE UCER S BKAVERHKSF QYKY:",
-        "Ndh, uh qfklfkgkazgkly zoblfkgnu xddux gl td slfikyb!",
         "FXA SRZ YNJIJS UC SRZ YZXYUT VOXEEZT AUHI RZXIS XTE TUHIJYR AUHI YUHO.",
         "Ewmrpgn icllqpkfoqy nrdq r fwmh eohprlowm lpos qdqpx xqrp. Lnqx bwcpmqx kpwe lnq Hpqrl Frjqy lw lnq Hcfk wk Eqzogw, riwcl luw lnwcyrmv eofqy, rmv pqlcpm lw lnq mwpln rhrom om lnq yspomh. Lnrl pqeomvy eq wk lnq wfv bwjq: O bcyl kfqu om kpwe Eqzogw rmv iwx rpq ex rpey lopqv.",
         "ICHLH ULH RELH ICUS IQHSID-YENL ICENOUSV OTHWZHO EY JNIIHLYKZHO, JNI REICO ULH HGHS RELH SNRHLENO. ICHLH ULH UJENI ESH CNSVLHV USV YELID ICENOUSV OTHWZHO EY REICO ASEQS IE HMZOI ZS ICH QELKV. ICH ESKD WESIZSHSI QCHLH SE JNIIHLYKZHO KZGH ZO USIULWIZWU. Z QENKVS'I QUSI IE KZGH ICHLH HZICHL.",
